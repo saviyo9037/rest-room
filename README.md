@@ -1,27 +1,23 @@
-# Fern & Flow — Kerala Homestay Website
+# Resort Booking Studio
+A Next.js App Router prototype with three resort website experiences and one central admin dashboard.
 
-A responsive homestay website prototype built with **Next.js App Router, React and TypeScript**.
+Routes: /site1, /site2, /site3, /admin
 
-## Included
-- Responsive landing page, story, six sample rooms, experiences and gallery
-- Booking enquiry form with check-in / check-out validation
-- WhatsApp enquiry handoff
-- Demo admin dashboard at `/#admin`
-- Browser-local enquiry storage using `localStorage`
+Demo admin code: resortdemo
 
-## Demo admin access
-- Route: `/#admin`
-- Email: `admin@fernflow.demo`
-- Password: `stay123`
+## Current prototype limitation
+The live prototype uses browser localStorage for room edits, content changes and reservations. This makes the flow demonstrable in one browser, but data is not shared across devices and is not suitable for live customer bookings. The admin sign-in is a demo gate, not production authentication. Image uploads are stored as browser data URLs.
 
-## Run locally
-```bash
+## Supabase production setup
+1. Create a Supabase project.
+2. Run supabase/migrations/001_initial_schema.sql in SQL editor.
+3. Create a resort-media storage bucket and authenticated write policies.
+4. Set values from .env.example in Vercel.
+5. Replace localStorage helpers in lib/data.ts with server-side Supabase operations and Supabase Auth before real use.
+
+The database migration includes a PostgreSQL exclusion constraint on room/date ranges to prevent overlapping bookings. Use [check-in, check-out) date ranges.
+
+## Local development
 npm install
 npm run dev
-```
-Open http://localhost:3000.
-
-## Before production launch
-This is still a front-end prototype. Enquiries are stored only in the visitor's browser; there is no shared database, secure authentication, live room availability, online payment, automated confirmation, or email notification. Replace the demo WhatsApp number in `app/page.tsx` (currently `919876543210`) and replace all sample property details, rates, contact details and imagery with owner-approved content.
-
-For a production booking system, connect a backend/database and implement secure admin authentication and server-side enquiry storage.
+npm run build

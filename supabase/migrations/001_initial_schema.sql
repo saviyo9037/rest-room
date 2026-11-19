@@ -1,0 +1,14 @@
+create extension if not exists btree_gist;
+create type booking_status as enum ('pending','confirmed','cancelled');
+create table websites(id uuid primary key default gen_random_uuid(),slug text unique not null check(slug in('site1','site2','site3')),name text not null,is_active boolean not null default true);
+create table rooms(id text primary key,name text not null,category text not null,description text not null default '',capacity int not null default 2,price_per_night int not null check(price_per_night>=0),size text,image_url text,is_active boolean not null default true);
+create table bookings(id uuid primary key default gen_random_uuid(),booking_reference text unique not null,room_id text not null references rooms(id),website_id uuid references websites(id),customer_name text not null,customer_phone text not null,customer_email text,check_in date not null,check_out date not null,guests int not null,total_amount int not null,source text not null check(source in('site1','site2','site3','spot')),status booking_status not null default 'confirmed',created_at timestamptz default now(),check(check_out>check_in));
+alter table bookings add constraint bookings_no_overlap exclude using gist(room_id with =,daterange(check_in,check_out,'[)') with &&) where(status in('pending','confirmed'));
+create table website_content(id uuid primary key default gen_random_uuid(),website_id uuid not null references websites(id),section_key text not null,content jsonb not null default '{}'::jsonb,updated_at timestamptz default now(),unique(website_id,section_key));
+create table room_images(id uuid primary key default gen_random_uuid(),room_id text not null references rooms(id) on delete cascade,image_url text not null,storage_path text,is_cover boolean default false,sort_order int default 0);
+alter table websites enable row level security;alter table rooms enable row level security;alter table bookings enable row level security;alter table website_content enable row level security;alter table room_images enable row level security;
+create policy "public read active websites" on websites for select using(is_active);
+create policy "public read active rooms" on rooms for select using(is_active);
+create policy "public read website content" on website_content for select using(true);
+create policy "public read room images" on room_images for select using(true);
+insert into websites(slug,name) values('site1','Mist & Moss'),('site2','The Aurel'),('site3','Fern & Fable') on conflict do nothing;
